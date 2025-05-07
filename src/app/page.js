@@ -1,11 +1,15 @@
 "use client"
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
+import ThemeSwitcher from './ThemeSwitcher';
 
 export default function Home() {
   //state for a new task
   const [task, setTask] = useState('');
   //state for a list of tasks
   const [tasks, setTasks] = useState([]);
+
+  const isFirst = useRef(true);
 
   // Loading from localStorage at start
   useEffect(() => {
@@ -15,6 +19,10 @@ export default function Home() {
 
   //  Saving to localStorage when a list changes
   useEffect(() => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      return;
+    }
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
 
@@ -25,8 +33,13 @@ export default function Home() {
       alert('Enter task text');
       return;
     }
-    
-    setTasks([...tasks, { id: Date.now(), text, completed: false }]);
+    const newTask = {
+      id: Date.now(),
+      text,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    }
+    setTasks([...tasks, newTask ]);
     setTask('');
   };
 
@@ -40,10 +53,11 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', padding: '0 1rem' }}>
-      <h1>ToDo List</h1>
+      <ThemeSwitcher />
+      <h1 style={{ fontSize: '50px', textAlign: 'center' }}>ToDo List</h1>
 
     {/*Input field and add task button*/}
-      <div style={{ display: 'flex', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', marginBottom: '1rem', border: 'solid 1px'  }}>
         <input
           type="text"
           value={task}
@@ -52,7 +66,7 @@ export default function Home() {
           placeholder="New task…"
           style={{ flex: 1, padding: '0.5rem' }}
         />
-        <button onClick={addTask} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem' }}>
+        <button onClick={addTask} style={{ marginLeft: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
           ADD
         </button>
       </div>
@@ -65,7 +79,7 @@ export default function Home() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              marginBottom: '0.5rem'
+              marginBottom: '0.5rem',
             }}
           >
             {/*Completeness checkbox*/}
@@ -84,8 +98,19 @@ export default function Home() {
               {task.text}
             </span>
 
+            {/*Add a timestump*/}
+            <small style={{color: '#666'}}>
+              {new Date(task.createdAt).toLocaleString()}
+            </small>
+
             {/*Delete button */}
-            <button onClick={() => deleteTask(task.id)} style={{ marginLeft: '0.5rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
+            <button onClick={() => deleteTask(task.id)} 
+            style={{ 
+              marginLeft: '0.5rem', 
+              paddingLeft: '0.5rem', 
+              paddingRight: '0.5rem',
+              cursor: 'pointer'
+              }}>
               Delete
             </button>
           </li>
